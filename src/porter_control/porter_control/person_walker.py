@@ -11,7 +11,7 @@ recovery when the target leaves the camera frame) -> stop.
 The scenario is identical on every run so that the live demo, the backup video
 and the plots in the report all come from the same motion.
 
-Owner: TEAMMATE
+Owner: Ahmet Melih ÜSTÜNER
 """
 
 import rclpy

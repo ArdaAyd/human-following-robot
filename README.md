@@ -14,8 +14,8 @@ Midterm project for BIMU4101 Introduction to Mobile Robotics, 2026.
 
 | Name | Student ID | Sensor responsibility |
 |---|---|---|
-| Arda AYDIN | TODO | LiDAR |
-| TODO | TODO | Camera |
+| Arda AYDIN | 1306230121 | LiDAR |
+| Ahmet Melih ÜSTÜNER | 1306230119 | Camera |
 
 The IMU is the additional sensor and is a shared responsibility.
 
