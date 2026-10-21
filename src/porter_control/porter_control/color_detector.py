@@ -19,7 +19,7 @@ The bearing is derived from the horizontal centroid u of the largest contour:
     f     = (W / 2) / tan(HFOV / 2)
     theta = atan((W / 2 - u) / f)
 
-Owner: TEAMMATE
+Owner: Ahmet Melih ÜSTÜNER
 """
 
 import rclpy

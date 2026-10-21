@@ -25,7 +25,7 @@ Decision rule (see project document, section 6):
     6. Halve v_limit while |pitch| exceeds pitch_threshold.
     7. If the target is lost, stop and sweep towards the side it was last seen.
 
-Owner: Arda
+Owner: Arda AYDIN
 """
 
 import rclpy
