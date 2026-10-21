@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<sdf version="1.12">
+  <!-- The model origin is at ground level; +X is the walking direction. -->
+  <model name="person">
+    <static>false</static>
+    <link name="body">
+      <pose>0 0 0.85 0 0 0</pose>
+      <inertial>
+        <mass>60</mass>
+        <!-- Solid cylinder: r = 0.175 m, h = 1.7 m, m = 60 kg.
+             Ixx = Iyy = m * (3*r^2 + h^2) / 12; Izz = m*r^2 / 2.
+             The thin vest is a surface covering with negligible added mass. -->
+        <inertia>
+          <ixx>14.909375</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>14.909375</iyy>
+          <iyz>0</iyz>
+          <izz>0.91875</izz>
+        </inertia>
+      </inertial>
+
+      <!-- Extends from the ground to 1.7 m, including the LiDAR's 0.25 m height. -->
+      <collision name="body_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.175</radius>
+            <length>1.7</length>
+          </cylinder>
+        </geometry>
+        <!-- VelocityControl slides the body; ground friction would tip it. -->
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="body_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.175</radius>
+            <length>1.7</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.12 0.16 0.22 1</ambient>
+          <diffuse>0.12 0.16 0.22 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- The orange band spans 0.925-1.375 m above the model origin. -->
+      <collision name="vest_collision">
+        <pose>0 0 0.3 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.18</radius>
+            <length>0.45</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="vest_visual">
+        <pose>0 0 0.3 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.18</radius>
+            <length>0.45</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>1 0.3 0 1</ambient>
+          <diffuse>1 0.3 0 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <plugin filename="gz-sim-velocity-control-system"
+            name="gz::sim::systems::VelocityControl">
+      <topic>/person/cmd_vel</topic>
+      <initial_linear>0 0 0</initial_linear>
+      <initial_angular>0 0 0</initial_angular>
+    </plugin>
+  </model>
+</sdf>
