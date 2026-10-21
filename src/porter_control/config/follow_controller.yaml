@@ -1,0 +1,15 @@
+# Runtime parameters for follow_controller.
+# Starting values; to be tuned against the simulation (project document, section 6).
+follow_controller:
+  ros__parameters:
+    target_distance: 1.0     # m     distance to keep behind the person
+    kp_angle: 1.5            #       proportional gain on bearing error
+    kd_angle: 0.1            #       derivative gain, fed by the IMU gyroscope
+    kp_distance: 0.8         #       proportional gain on range error
+    v_max: 0.5               # m/s   maximum forward speed
+    omega_max: 1.0           # rad/s maximum turn rate
+    angle_threshold: 0.35    # rad   turn in place above this bearing (~20 deg)
+    safety_distance: 0.5     # m     stop if anything ahead is closer than this
+    pitch_threshold: 0.087   # rad   ramp detection (~5 deg); halves v_max above it
+    target_timeout: 0.5      # s     /target older than this counts as stale
+    search_duration: 5.0     # s     how long to sweep for a lost target

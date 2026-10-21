@@ -1,0 +1,19 @@
+# colcon
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# ROS bag recordings (large; the report carries the plots instead)
+*.db3
+*.mcap
+rosbag2_*/
