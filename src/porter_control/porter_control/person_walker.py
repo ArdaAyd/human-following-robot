@@ -6,8 +6,8 @@ Publishes
 /person/cmd_vel : geometry_msgs/Twist
     Consumed by the VelocityControl plugin attached to the person model.
 
-Scenario: walk straight -> turn -> climb the ramp -> sudden sidestep (to test
-recovery when the target leaves the camera frame) -> stop.
+Scenario: walk a longer three-sided ground route -> climb the ramp -> sudden
+sidestep (to test recovery when the target leaves the camera frame) -> stop.
 
 The scenario is identical on every run so that the live demo, the backup video
 and the plots in the report all come from the same motion.
@@ -46,9 +46,11 @@ DEFAULTS = {
     'linear_speed': 0.3,
     'turn_speed': math.pi / 6.0,
     'sidestep_speed': 0.3,
-    'straight_duration': 8.0,
+    'straight_duration': 12.0,
     'turn_duration': 3.0,
-    'ramp_duration': 10.0,
+    'approach_duration': 10.0,
+    'cross_duration': 22.0,
+    'ramp_duration': 14.0,
     'sidestep_duration': 3.0,
 }
 STOPPED = MotionPhase('stopped', 0.0)
@@ -66,7 +68,15 @@ def build_phases(parameters: Mapping[str, float]) -> tuple[MotionPhase, ...]:
         MotionPhase('start_delay', parameters['start_delay']),
         MotionPhase('straight', parameters['straight_duration'],
                     linear_x=parameters['linear_speed']),
-        MotionPhase('turn', parameters['turn_duration'],
+        MotionPhase('first_turn', parameters['turn_duration'],
+                    angular_z=parameters['turn_speed']),
+        MotionPhase('approach', parameters['approach_duration'],
+                    linear_x=parameters['linear_speed']),
+        MotionPhase('second_turn', parameters['turn_duration'],
+                    angular_z=parameters['turn_speed']),
+        MotionPhase('cross', parameters['cross_duration'],
+                    linear_x=parameters['linear_speed']),
+        MotionPhase('third_turn', parameters['turn_duration'],
                     angular_z=parameters['turn_speed']),
         MotionPhase('ramp_leg', parameters['ramp_duration'],
                     linear_x=parameters['linear_speed']),

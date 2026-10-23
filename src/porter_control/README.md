@@ -15,17 +15,25 @@ in the person's body frame: +X forward, +Y left, +Z yaw counterclockwise.
 | Time (s) | Phase | Command |
 |---|---|---|
 | 0-2 | Start delay | Stop |
-| 2-10 | Straight | 0.3 m/s forward (2.4 m) |
-| 10-13 | Turn | 0.5236 rad/s left (90 degrees) |
-| 13-23 | Ramp leg | 0.3 m/s forward (3 m) |
-| 23-26 | Sudden sidestep | 0.3 m/s left (0.9 m) |
-| 26 onward | Stopped | Repeated zero velocity |
+| 2-14 | Straight | 0.3 m/s forward (3.6 m) |
+| 14-17 | First turn | 0.5236 rad/s left (90 degrees) |
+| 17-27 | Approach | 0.3 m/s forward (3 m) |
+| 27-30 | Second turn | 0.5236 rad/s left (90 degrees) |
+| 30-52 | Cross yard | 0.3 m/s forward (6.6 m) |
+| 52-55 | Third turn | 0.5236 rad/s left (90 degrees) |
+| 55-69 | Ramp leg | 0.3 m/s forward (4.2 m) |
+| 69-72 | Sudden sidestep | 0.3 m/s left (0.9 m) |
+| 72 onward | Stopped | Repeated zero velocity |
 
-The ramp leg is a timed forward command, not terrain detection. The world owner
-must align a ramp with that leg and validate physical traversal. Likewise,
-leaving Porter's camera view during the sidestep must be checked after robot
-integration. The sequence runs once; restart the node to repeat from the
-person's current pose, or reset the world and restart for the same starting pose.
+The default route covers 18.3 m without increasing the walking speed. In
+`porter_world.sdf` it follows (0, 0), (3.6, 0), (3.6, 3), (-3, 3),
+(-3, -1.2), then (-2.1, -1.2). The roughly 12 x 11 m yard has obstacles
+clear of the route and a south-facing ramp on the last forward leg. The person
+finishes on the 0.25 m high deck. The ramp leg is a timed command, not terrain
+detection; changing speeds or durations also requires realigning the world.
+Camera-view loss during the sidestep needs checking after camera/controller
+integration. The sequence runs once; reset the person pose and restart the node
+to repeat from the same starting point.
 
 ## Run with the person model
 
@@ -37,8 +45,15 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-Start Gazebo and insert `person.sdf` using the instructions in
-[`porter_gazebo/models/README.md`](../porter_gazebo/models/README.md).
+Start the project world, which already includes the person. The models resource
+path lets Gazebo resolve the world's relative person include; the world name
+matches the clock entry in the shared bridge:
+
+```bash
+export GZ_SIM_RESOURCE_PATH="$(ros2 pkg prefix porter_gazebo)/share/porter_gazebo/models${GZ_SIM_RESOURCE_PATH:+:$GZ_SIM_RESOURCE_PATH}"
+gz sim -r "$(ros2 pkg prefix porter_gazebo)/share/porter_gazebo/worlds/porter_world.sdf"
+```
+
 In a separate terminal, source ROS and the workspace as above, then start the
 single shared bridge configuration:
 
@@ -55,8 +70,8 @@ ros2 run porter_control person_walker --ros-args \
 ```
 
 Inspect the output with `ros2 topic echo /person/cmd_vel` or
-`ros2 topic hz /person/cmd_vel`. The model should walk, turn, move forward,
-sidestep, and stop. Keep the node running to continue publishing the final stop.
+`ros2 topic hz /person/cmd_vel`. The model should traverse the yard, make three
+left turns, climb the ramp, sidestep, and stop. Keep the node running to continue publishing the final stop.
 Ctrl+C or SIGTERM sends zero velocity and waits up to 0.5 s for acknowledgements
 before ROS shuts down.
 A forced kill cannot send a stop; recover with:

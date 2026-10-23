@@ -6,7 +6,9 @@ person_walker:
     linear_speed: 0.3        # m/s, below Porter's planned 0.5 m/s maximum
     turn_speed: 0.5235987755982988  # rad/s, 90 degrees left over 3 s
     sidestep_speed: 0.3      # m/s, positive body-frame Y (left)
-    straight_duration: 8.0  # s, 2.4 m forward
-    turn_duration: 3.0      # s, turn in place
-    ramp_duration: 10.0     # s, 3 m forward; align the world ramp with this leg
+    straight_duration: 12.0 # s, 3.6 m east from the starting pose
+    turn_duration: 3.0      # s per left turn; three 90-degree turns
+    approach_duration: 10.0 # s, 3 m north on level ground
+    cross_duration: 22.0    # s, 6.6 m west on level ground
+    ramp_duration: 14.0     # s, 4.2 m south, climbing onto the loading deck
     sidestep_duration: 3.0  # s, 0.9 m left; then hold zero velocity
