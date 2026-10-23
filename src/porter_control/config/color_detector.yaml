@@ -1,0 +1,9 @@
+color_detector:
+  ros__parameters:
+    use_sim_time: true
+    hsv_lower: [5, 180, 50]   # OpenCV H: 0..179, S/V: 0..255
+    hsv_upper: [25, 255, 255] # High saturation rejects the brown warehouse crates
+    min_area: 500.0          # px, contour area; no target below this threshold
+    hfov_deg: 80.0           # Must match camera.xacro
+    morphology_size: 3      # Odd kernel width; 0 disables mask cleanup
+    bearing_frame: camera_link # +X forward and +Y left; not Cartesian point data

@@ -41,8 +41,9 @@ source install/setup.bash
 
 Follow the [manual camera demo](src/porter_description/README.md) to start the
 warehouse world, spawn Porter, bridge its sensors and open the live camera
-image. The [person walker guide](src/porter_control/README.md) describes the
-72-second walking scenario.
+image. The [person walker guide](src/porter_control/README.md#person-walker) describes the
+72-second walking scenario. The [colour detector guide](src/porter_control/README.md#colour-detector)
+explains how to publish the orange vest bearing and inspect the live mask.
 
 The shared `bringup.launch.py`, RViz configuration and automatic following
 behaviour are still pending.
@@ -119,7 +120,7 @@ the same file at the same time. If that does happen, say so before starting.
 - [ ] IMU integration and visualisation
 - [x] Gazebo world and person model
 - [ ] Single bringup launch file
-- [ ] `color_detector` — colour detection and bearing
+- [x] `color_detector` — colour detection and bearing
 - [ ] `follow_controller` — following behaviour
 - [x] `person_walker` — demo scenario
 
