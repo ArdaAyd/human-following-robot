@@ -49,7 +49,10 @@ The plugin holds the most recent command, so stopping the publisher does not
 stop the model. Always send a zero command after a motion check. The commands
 above use Gazebo Transport directly. To run the ROS bridge and the fixed walking
 scenario, follow [`porter_control/README.md`](../../porter_control/README.md).
-Ramp traversal still needs validation in the project world.
+The ROS scenario uses `porter_world.sdf`, not this standalone empty world,
+because the shared bridge maps `/world/porter_world/clock`. The project world
+already includes the person; do not spawn a second copy there. The longer route
+climbs the ramp on its final southbound leg and finishes on the deck.
 
 ## World integration
 

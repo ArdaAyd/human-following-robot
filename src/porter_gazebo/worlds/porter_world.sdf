@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!-- Warehouse yard for Porter.
 
-     The layout is built around the person_walker scenario, which walks the
-     person from the origin to (2.40, 0.00), turns left, then walks to
-     (2.40, 3.00) before stepping aside to (1.50, 3.00). The ramp sits on that
-     second leg so the robot has to climb while following, which is what the
-     IMU speed limit reacts to.
+     The 72-second person_walker scenario follows the ground route
+     (0, 0) -> (3.6, 0) -> (3.6, 3) -> (-3, 3), then heads south up
+     the ramp to (-3, -1.2) and sidesteps east to (-2.1, -1.2).
+     The route covers 18.3 m at 0.3 m/s. The roughly 12 x 11 m yard
+     leaves room for Porter's turns and the IMU slope-speed scenario.
 
      The world name is referenced by config/bridge.yaml for the clock topic
      (/world/porter_world/clock). Renaming the world means renaming it there
@@ -72,13 +72,14 @@
 
     <!-- ===================== Ramp =====================
          8 degrees over a 1.8 m run: the surface leaves the ground at
-         y = 0.80 and reaches z = 0.25 at y = 2.58. Gentle enough that the
-         velocity-controlled person model keeps contact, steep enough that
+         y = 2.00 and reaches z = 0.25 at y = 0.22 while walking south.
+         Gentle enough that the velocity-controlled person keeps contact,
+         steep enough that
          the IMU reads a clear pitch. 2.4 m wide so the 0.55 m robot has
          room to correct while climbing. -->
     <model name="ramp">
       <static>true</static>
-      <pose>2.4 1.7 0.0757 0.1396 0 0</pose>
+      <pose>-3.0 1.1 0.0757 -0.1396 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>2.4 1.8 0.1</size></box></geometry>
@@ -95,18 +96,18 @@
     </model>
 
     <!-- Flat deck continuing from the top of the ramp. The person finishes
-         its scenario here, and sidesteps to x = 1.50, well inside the
-         1.2 - 3.6 m span. -->
+         its scenario here, and sidesteps to x = -2.10, well inside the
+         -4.4 to -1.6 m span. -->
     <model name="ramp_deck">
       <static>true</static>
-      <pose>2.4 3.592 0.2005 0 0 0</pose>
+      <pose>-3.0 -1.092 0.2005 0 0 0</pose>
       <link name="link">
         <collision name="collision">
-          <geometry><box><size>2.4 2.016 0.1</size></box></geometry>
+          <geometry><box><size>2.8 2.616 0.1</size></box></geometry>
           <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface>
         </collision>
         <visual name="visual">
-          <geometry><box><size>2.4 2.016 0.1</size></box></geometry>
+          <geometry><box><size>2.8 2.616 0.1</size></box></geometry>
           <material>
             <ambient>0.40 0.40 0.43 1</ambient>
             <diffuse>0.55 0.55 0.58 1</diffuse>
@@ -146,7 +147,7 @@
 
     <model name="crate_c">
       <static>true</static>
-      <pose>0.1 2.6 0.25 0 0 0.9</pose>
+      <pose>0.1 4.8 0.25 0 0 0.9</pose>
       <link name="link">
         <collision name="collision"><geometry><box><size>0.7 0.7 0.5</size></box></geometry></collision>
         <visual name="visual">
@@ -182,7 +183,7 @@
 
     <model name="drum_b">
       <static>true</static>
-      <pose>-1.3 -2.3 0.40 0 0 0</pose>
+      <pose>-0.8 -2.8 0.40 0 0 0</pose>
       <link name="link">
         <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry></collision>
         <visual name="visual">
@@ -194,7 +195,7 @@
 
     <model name="drum_c">
       <static>true</static>
-      <pose>-2.4 1.8 0.40 0 0 0</pose>
+      <pose>-4.5 3.4 0.40 0 0 0</pose>
       <link name="link">
         <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry></collision>
         <visual name="visual">
@@ -207,11 +208,11 @@
     <!-- Boundary walls, far enough out that they never pinch the route. -->
     <model name="wall_west">
       <static>true</static>
-      <pose>-3.6 1.0 0.8 0 0 0</pose>
+      <pose>-5.0 1.0 0.8 0 0 0</pose>
       <link name="link">
-        <collision name="collision"><geometry><box><size>0.2 9.0 1.6</size></box></geometry></collision>
+        <collision name="collision"><geometry><box><size>0.2 11.0 1.6</size></box></geometry></collision>
         <visual name="visual">
-          <geometry><box><size>0.2 9.0 1.6</size></box></geometry>
+          <geometry><box><size>0.2 11.0 1.6</size></box></geometry>
           <material><ambient>0.45 0.45 0.47 1</ambient><diffuse>0.60 0.60 0.62 1</diffuse></material>
         </visual>
       </link>
@@ -219,11 +220,11 @@
 
     <model name="wall_south">
       <static>true</static>
-      <pose>1.5 -3.5 0.8 0 0 0</pose>
+      <pose>1.0 -4.6 0.8 0 0 0</pose>
       <link name="link">
-        <collision name="collision"><geometry><box><size>10.0 0.2 1.6</size></box></geometry></collision>
+        <collision name="collision"><geometry><box><size>12.0 0.2 1.6</size></box></geometry></collision>
         <visual name="visual">
-          <geometry><box><size>10.0 0.2 1.6</size></box></geometry>
+          <geometry><box><size>12.0 0.2 1.6</size></box></geometry>
           <material><ambient>0.45 0.45 0.47 1</ambient><diffuse>0.60 0.60 0.62 1</diffuse></material>
         </visual>
       </link>
@@ -243,7 +244,7 @@
          never starts stepping, so the clock never publishes and every node
          sits waiting for simulated time. bringup.launch.py must set it.
 
-         Note that `gz sdf --check` always reports this include as an error:
+         Note that the standalone SDF checker reports this include as an error:
          the standalone checker does not install a file-finding callback.
          That message is a tool limitation, not a problem with the world. -->
     <include>

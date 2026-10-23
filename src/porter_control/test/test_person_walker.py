@@ -10,11 +10,15 @@ import pytest
     (0.0, (0.0, 0.0, 0.0)),
     (1.999999999, (0.0, 0.0, 0.0)),
     (2.0, (0.3, 0.0, 0.0)),
-    (9.999999999, (0.3, 0.0, 0.0)),
-    (10.0, (0.0, 0.0, math.pi / 6.0)),
-    (13.0, (0.3, 0.0, 0.0)),
-    (23.0, (0.0, 0.3, 0.0)),
-    (26.0, (0.0, 0.0, 0.0)),
+    (13.999999999, (0.3, 0.0, 0.0)),
+    (14.0, (0.0, 0.0, math.pi / 6.0)),
+    (17.0, (0.3, 0.0, 0.0)),
+    (27.0, (0.0, 0.0, math.pi / 6.0)),
+    (30.0, (0.3, 0.0, 0.0)),
+    (52.0, (0.0, 0.0, math.pi / 6.0)),
+    (55.0, (0.3, 0.0, 0.0)),
+    (69.0, (0.0, 0.3, 0.0)),
+    (72.0, (0.0, 0.0, 0.0)),
     (1000.0, (0.0, 0.0, 0.0)),
 ])
 def test_default_timing(seconds, command):
@@ -26,7 +30,8 @@ def test_default_timing(seconds, command):
 def test_zero_duration_phases_are_skipped():
     """Allow a shortened scenario without briefly issuing skipped commands."""
     settings = dict(DEFAULTS, start_delay=0.0, straight_duration=0.0,
-                    turn_duration=0.0, ramp_duration=0.0)
+                    turn_duration=0.0, approach_duration=0.0,
+                    cross_duration=0.0, ramp_duration=0.0)
     phases = build_phases(settings)
     assert phase_at(0, phases).linear_y == 0.3
     assert phase_at(3_000_000_000, phases).name == 'stopped'
