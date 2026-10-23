@@ -1,4 +1,70 @@
-# Person walker
+# Porter control nodes
+
+## Colour detector
+
+`color_detector` converts the RGB camera image to HSV, cleans the orange mask,
+and selects its largest external contour. The target is accepted only when its
+area meets `min_area`. A high saturation threshold rejects the brown warehouse
+crates while retaining the shaded orange vest.
+
+| Topic | Meaning |
+|---|---|
+| `/camera/image_raw` | Input image; reliable subscription, queue depth 1 |
+| `/target` | `PointStamped`: X = bearing (rad, left positive), Y = contour area (px), Z unused |
+| `/target_debug_image` | RGB mask, image centre line and accepted target centroid |
+
+The `/target` payload is a bearing/area protocol, **not a Cartesian point**.
+Its header retains the source image timestamp and uses `camera_link`, whose
+axes are +X forward and +Y left. The debug image retains the input image's
+header, including `camera_optical_link`. No `/target` message is emitted when
+the target is absent or too small; the debug image continues with `NO TARGET`.
+Malformed frames are skipped with a throttled warning. Target loss and motion
+commands belong to `follow_controller`.
+
+The bearing is `atan((W/2 - u) / f)`, with
+`f = (W/2) / tan(HFOV/2)`. `hfov_deg` must match `camera.xacro` (80 degrees).
+All settings in `config/color_detector.yaml` are validated, read-only startup
+parameters. Restart the node after editing them. OpenCV hue is 0-179; saturation
+and value are 0-255. This is simple colour detection: another sufficiently large
+orange object can become the target; there is no identity recognition.
+
+### Run and inspect
+
+Build and source the workspace, then start the world, robot, shared bridge and
+camera viewer using the [camera guide](../porter_description/README.md).
+In another sourced terminal, run:
+
+```bash
+ros2 run porter_control color_detector --ros-args \
+  --params-file "$(ros2 pkg prefix porter_control)/share/porter_control/config/color_detector.yaml"
+```
+
+Open the live mask in another sourced terminal:
+
+```bash
+ros2 run rqt_image_view rqt_image_view /target_debug_image
+```
+
+Inspect the bearing with `ros2 topic echo /target`. A target to the robot's left
+must give a positive X value; a target to its right must give a negative value.
+The green cross marks the accepted centroid. When the vest leaves the image,
+`/target` must fall silent and the debug view must show `NO TARGET`; returning
+the vest must resume detections. Keep `person_walker` stopped during this check.
+The detector does not move the robot.
+
+### Detector tests
+
+```bash
+python3 -m pytest src/porter_control/test/test_color_detector*.py
+```
+
+The tests cover resolution-independent bearing, largest-contour selection,
+brown/blue rejection, shaded orange, area thresholds, invalid settings, RGB/BGR
+conversion, original timestamps, target loss, debug output and recovery after a
+malformed image. They also check clean shutdown without a camera stream and
+with repeated interrupt signals. The ROS tests use private topic remappings.
+
+## Person walker
 
 `person_walker` publishes `geometry_msgs/msg/Twist` on `/person/cmd_vel` at
 20 Hz. The supplied configuration uses Gazebo's ROS simulation clock. The
@@ -7,7 +73,7 @@ The sequence waits for a nonzero simulation clock and a command subscriber
 (normally the ROS-to-Gazebo bridge), then starts its delay. Rewinding the clock
 restarts the sequence.
 
-## Default scenario
+### Default scenario
 
 Times are relative to readiness, not to world startup. All motion is expressed
 in the person's body frame: +X forward, +Y left, +Z yaw counterclockwise.
@@ -35,7 +101,7 @@ Camera-view loss during the sidestep needs checking after camera/controller
 integration. The sequence runs once; reset the person pose and restart the node
 to repeat from the same starting point.
 
-## Run with the person model
+### Run with the person model
 
 Build from the workspace root and load the environment:
 
@@ -85,7 +151,7 @@ in `config/person_walker.yaml`; edit them and restart the node to tune the demo.
 Durations and speeds must be finite and non-negative, and publish rate positive.
 Set `use_sim_time:=false` explicitly only for command-only tests without Gazebo.
 
-## Tests
+### Tests
 
 From a sourced workspace, run the walker tests with:
 
