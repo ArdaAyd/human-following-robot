@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<!-- Warehouse yard for Porter.
+
+     The layout is built around the person_walker scenario, which walks the
+     person from the origin to (2.40, 0.00), turns left, then walks to
+     (2.40, 3.00) before stepping aside to (1.50, 3.00). The ramp sits on that
+     second leg so the robot has to climb while following, which is what the
+     IMU speed limit reacts to.
+
+     The world name is referenced by config/bridge.yaml for the clock topic
+     (/world/porter_world/clock). Renaming the world means renaming it there
+     too, otherwise every node waits for a clock that never arrives.
+
+     Obstacles are placed clear of the walked route. Porter sweeps a 0.96 m
+     circle when turning in place, so every passage is at least 1.4 m wide. -->
+<sdf version="1.12">
+  <world name="porter_world">
+
+    <physics name="default" type="ode">
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <!-- Required for the LiDAR and the camera: both render the scene. -->
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <gravity>0 0 -9.8</gravity>
+
+    <scene>
+      <ambient>0.45 0.45 0.48 1</ambient>
+      <background>0.62 0.68 0.75 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 12 0 0 0</pose>
+      <diffuse>0.95 0.93 0.88 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
+      <direction>-0.4 0.35 -0.85</direction>
+    </light>
+
+    <!-- ===================== Ground ===================== -->
+    <model name="ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>60 60</size></plane></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>60 60</size></plane></geometry>
+          <material>
+            <ambient>0.33 0.34 0.36 1</ambient>
+            <diffuse>0.42 0.43 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===================== Ramp =====================
+         8 degrees over a 1.8 m run: the surface leaves the ground at
+         y = 0.80 and reaches z = 0.25 at y = 2.58. Gentle enough that the
+         velocity-controlled person model keeps contact, steep enough that
+         the IMU reads a clear pitch. 2.4 m wide so the 0.55 m robot has
+         room to correct while climbing. -->
+    <model name="ramp">
+      <static>true</static>
+      <pose>2.4 1.7 0.0757 0.1396 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>2.4 1.8 0.1</size></box></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>2.4 1.8 0.1</size></box></geometry>
+          <material>
+            <ambient>0.40 0.40 0.43 1</ambient>
+            <diffuse>0.55 0.55 0.58 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Flat deck continuing from the top of the ramp. The person finishes
+         its scenario here, and sidesteps to x = 1.50, well inside the
+         1.2 - 3.6 m span. -->
+    <model name="ramp_deck">
+      <static>true</static>
+      <pose>2.4 3.592 0.2005 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>2.4 2.016 0.1</size></box></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>2.4 2.016 0.1</size></box></geometry>
+          <material>
+            <ambient>0.40 0.40 0.43 1</ambient>
+            <diffuse>0.55 0.55 0.58 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===================== Obstacles =====================
+         Crates and drums, all clear of the walked route. They give the LiDAR
+         something to measure and satisfy the "world with obstacles"
+         requirement without narrowing the path below 1.4 m. -->
+
+    <model name="crate_a">
+      <static>true</static>
+      <pose>1.2 -2.0 0.30 0 0 0.3</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.6 0.6 0.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.6 0.6 0.6</size></box></geometry>
+          <material><ambient>0.38 0.26 0.15 1</ambient><diffuse>0.52 0.36 0.20 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="crate_b">
+      <static>true</static>
+      <pose>4.6 -0.9 0.45 0 0 -0.2</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.8 0.5 0.9</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.8 0.5 0.9</size></box></geometry>
+          <material><ambient>0.38 0.26 0.15 1</ambient><diffuse>0.52 0.36 0.20 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="crate_c">
+      <static>true</static>
+      <pose>0.1 2.6 0.25 0 0 0.9</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.7 0.7 0.5</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.7 0.7 0.5</size></box></geometry>
+          <material><ambient>0.38 0.26 0.15 1</ambient><diffuse>0.52 0.36 0.20 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="crate_d">
+      <static>true</static>
+      <pose>5.4 3.6 0.60 0 0 0.15</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>1.0 0.8 1.2</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>1.0 0.8 1.2</size></box></geometry>
+          <material><ambient>0.34 0.30 0.22 1</ambient><diffuse>0.46 0.41 0.30 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drum_a">
+      <static>true</static>
+      <pose>4.9 1.9 0.45 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.3</radius><length>0.9</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.3</radius><length>0.9</length></cylinder></geometry>
+          <material><ambient>0.15 0.28 0.38 1</ambient><diffuse>0.20 0.40 0.54 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drum_b">
+      <static>true</static>
+      <pose>-1.3 -2.3 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry>
+          <material><ambient>0.15 0.28 0.38 1</ambient><diffuse>0.20 0.40 0.54 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drum_c">
+      <static>true</static>
+      <pose>-2.4 1.8 0.40 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry></collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.25</radius><length>0.8</length></cylinder></geometry>
+          <material><ambient>0.15 0.28 0.38 1</ambient><diffuse>0.20 0.40 0.54 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Boundary walls, far enough out that they never pinch the route. -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-3.6 1.0 0.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.2 9.0 1.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>0.2 9.0 1.6</size></box></geometry>
+          <material><ambient>0.45 0.45 0.47 1</ambient><diffuse>0.60 0.60 0.62 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_south">
+      <static>true</static>
+      <pose>1.5 -3.5 0.8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>10.0 0.2 1.6</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>10.0 0.2 1.6</size></box></geometry>
+          <material><ambient>0.45 0.45 0.47 1</ambient><diffuse>0.60 0.60 0.62 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===================== Followed person =====================
+         Spawns at the origin facing +X; person_walker drives it from there.
+
+         REQUIRES GZ_SIM_RESOURCE_PATH to contain this package's models
+         directory, for example:
+
+           share/porter_gazebo/models
+
+         Pointing it at the package share directory is not enough; it has to
+         be the models directory itself. Without it Gazebo reports
+         "Unable to find uri[../models/person.sdf]", drops the world, and
+         never starts stepping, so the clock never publishes and every node
+         sits waiting for simulated time. bringup.launch.py must set it.
+
+         Note that `gz sdf --check` always reports this include as an error:
+         the standalone checker does not install a file-finding callback.
+         That message is a tool limitation, not a problem with the world. -->
+    <include>
+      <uri>../models/person.sdf</uri>
+      <name>person</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
