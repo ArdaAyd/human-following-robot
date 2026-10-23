@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<!-- Chassis, drive wheels and casters for Porter, plus the Gazebo drive plugin.
+     Frame convention: +X forward, +Y left, +Z up. base_footprint sits on the
+     ground; base_link is at the geometric centre of the chassis box. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================ Dimensions ============================ -->
+  <xacro:property name="chassis_length" value="0.75"/>
+  <xacro:property name="chassis_width"  value="0.55"/>
+  <xacro:property name="chassis_height" value="0.15"/>
+  <xacro:property name="chassis_mass"   value="22.0"/>
+
+  <xacro:property name="wheel_radius"   value="0.11"/>
+  <xacro:property name="wheel_width"    value="0.05"/>
+  <xacro:property name="wheel_mass"     value="2.2"/>
+
+  <xacro:property name="caster_radius"  value="0.035"/>
+  <xacro:property name="caster_mass"    value="0.3"/>
+  <xacro:property name="caster_offset"  value="0.31"/>   <!-- +-X from centre -->
+
+  <!-- Chassis centre height. The wheel axle must sit exactly one wheel radius
+       above the ground, so the wheel joints are lowered by this difference. -->
+  <xacro:property name="base_height"    value="0.20"/>
+  <xacro:property name="wheel_dz"       value="${wheel_radius - base_height}"/>
+  <xacro:property name="caster_dz"      value="${caster_radius - base_height}"/>
+
+  <!-- Half the chassis width plus half a wheel: the wheels sit just outside
+       the body. This value feeds the DiffDrive plugin as wheel_separation. -->
+  <xacro:property name="wheel_dy"       value="${chassis_width/2 + wheel_width/2}"/>
+  <xacro:property name="wheel_separation" value="${2*wheel_dy}"/>
+
+  <!-- Sensor placement, shared by lidar.xacro and camera.xacro.
+       Both sensors sit on the SAME vertical axis (sensor_x) so that a bearing
+       measured in the image maps directly onto a LiDAR ray index with no
+       parallax correction. The supporting post stands further back at
+       mast_post_x and carries the camera forward on a short arm, which keeps
+       it out of the LiDAR scan plane. -->
+  <xacro:property name="sensor_x"       value="0.41"/>
+  <xacro:property name="mast_post_x"    value="0.33"/>
+  <xacro:property name="lidar_height"   value="0.25"/>
+  <xacro:property name="camera_height"  value="1.00"/>
+
+  <xacro:property name="platform_length" value="0.62"/>
+  <xacro:property name="platform_width"  value="0.48"/>
+  <xacro:property name="platform_thick"  value="0.02"/>
+  <xacro:property name="rail_height"     value="0.06"/>
+  <xacro:property name="rail_thick"      value="0.015"/>
+
+  <!-- ============================= Materials ============================ -->
+  <material name="porter_body">  <color rgba="0.15 0.35 0.55 1"/></material>
+  <material name="porter_dark">  <color rgba="0.15 0.15 0.17 1"/></material>
+  <material name="porter_accent"><color rgba="0.85 0.85 0.88 1"/></material>
+
+  <!-- ============================== Macros ============================== -->
+  <!-- Solid box inertia about its own centre. -->
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0"
+               iyy="${m*(x*x+z*z)/12}" iyz="0"
+               izz="${m*(x*x+y*y)/12}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- Solid sphere inertia about its own centre. -->
+  <xacro:macro name="sphere_inertia" params="m r">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0"
+               iyy="${2*m*r*r/5}" iyz="0"
+               izz="${2*m*r*r/5}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- One drive wheel. The cylinder is rotated so that its axis lies along Y;
+       the inertia is written in that same rotated frame, which is why the
+       standard "axis = local Z" formula still applies. -->
+  <xacro:macro name="drive_wheel" params="prefix side">
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+        <material name="porter_dark"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="${wheel_mass*(3*wheel_radius*wheel_radius + wheel_width*wheel_width)/12}" ixy="0" ixz="0"
+                 iyy="${wheel_mass*(3*wheel_radius*wheel_radius + wheel_width*wheel_width)/12}" iyz="0"
+                 izz="${wheel_mass*wheel_radius*wheel_radius/2}"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child  link="${prefix}_wheel_link"/>
+      <origin xyz="0 ${side*wheel_dy} ${wheel_dz}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+
+    <!-- Grip: the wheels must not slip, otherwise odometry drifts badly. -->
+    <gazebo reference="${prefix}_wheel_link">
+      <mu1>1.2</mu1>
+      <mu2>1.2</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- One caster, modelled as a frictionless sphere rigidly attached to the
+       body. A real swivel joint is unnecessary and only adds instability. -->
+  <xacro:property name="caster_strut_radius" value="0.013"/>
+  <!-- Leg from the chassis underside down to the top of the ball. -->
+  <xacro:property name="caster_strut_length"
+                  value="${base_height - chassis_height/2 - 2*caster_radius}"/>
+
+  <xacro:macro name="caster" params="prefix side">
+    <link name="${prefix}_caster_link">
+      <visual>
+        <geometry><sphere radius="${caster_radius}"/></geometry>
+        <material name="porter_dark"/>
+      </visual>
+      <!-- Thin leg, drawn upwards from the ball to the chassis. -->
+      <visual>
+        <origin xyz="0 0 ${caster_radius + caster_strut_length/2}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${caster_strut_radius}" length="${caster_strut_length}"/>
+        </geometry>
+        <material name="porter_accent"/>
+      </visual>
+      <collision>
+        <geometry><sphere radius="${caster_radius}"/></geometry>
+      </collision>
+      <xacro:sphere_inertia m="${caster_mass}" r="${caster_radius}"/>
+    </link>
+
+    <joint name="${prefix}_caster_joint" type="fixed">
+      <parent link="base_link"/>
+      <child  link="${prefix}_caster_link"/>
+      <origin xyz="${side*caster_offset} 0 ${caster_dz}" rpy="0 0 0"/>
+    </joint>
+
+    <gazebo reference="${prefix}_caster_link">
+      <mu1>0.0</mu1>
+      <mu2>0.0</mu2>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- ============================== Links =============================== -->
+  <!-- Massless reference frame on the ground, directly below base_link. -->
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child  link="base_link"/>
+    <origin xyz="0 0 ${base_height}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry>
+      <material name="porter_body"/>
+    </visual>
+    <collision>
+      <geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry>
+    </collision>
+    <xacro:box_inertia m="${chassis_mass}" x="${chassis_length}"
+                       y="${chassis_width}" z="${chassis_height}"/>
+  </link>
+
+  <!-- Cargo deck with low rails. Visual only: it carries no load in
+       simulation and collision shapes here would only slow physics down. -->
+  <link name="cargo_deck_link">
+    <visual>
+      <geometry><box size="${platform_length} ${platform_width} ${platform_thick}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <visual>
+      <origin xyz="0 ${platform_width/2 - rail_thick/2} ${rail_height/2}"/>
+      <geometry><box size="${platform_length} ${rail_thick} ${rail_height}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <visual>
+      <origin xyz="0 ${-platform_width/2 + rail_thick/2} ${rail_height/2}"/>
+      <geometry><box size="${platform_length} ${rail_thick} ${rail_height}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <visual>
+      <origin xyz="${-platform_length/2 + rail_thick/2} 0 ${rail_height/2}"/>
+      <geometry><box size="${rail_thick} ${platform_width} ${rail_height}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <xacro:box_inertia m="2.0" x="${platform_length}"
+                       y="${platform_width}" z="${platform_thick}"/>
+  </link>
+
+  <joint name="cargo_deck_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="cargo_deck_link"/>
+    <origin xyz="0 0 ${chassis_height/2 + platform_thick/2}" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:drive_wheel prefix="left"  side="1"/>
+  <xacro:drive_wheel prefix="right" side="-1"/>
+  <xacro:caster      prefix="front" side="1"/>
+  <xacro:caster      prefix="rear"  side="-1"/>
+
+  <!-- ============================= Gazebo =============================== -->
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system"
+            name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>${wheel_separation}</wheel_separation>
+      <wheel_radius>${wheel_radius}</wheel_radius>
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_publish_frequency>50</odom_publish_frequency>
+      <max_linear_acceleration>1.5</max_linear_acceleration>
+    </plugin>
+
+    <!-- Feeds /joint_states so robot_state_publisher can turn the wheels
+         in RViz. Without it the wheels stay frozen in the visualisation. -->
+    <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+      <topic>joint_states</topic>
+      <!-- Without a rate limit this publishes at the physics step rate
+           (~1000 Hz), which is far more than RViz needs. -->
+      <update_rate>50</update_rate>
+    </plugin>
+  </gazebo>
+
+</robot>

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!-- 360 degree LiDAR on a short post at the front of the chassis.
+     Shares sensor_mast_x with the camera so that a bearing measured in the
+     image can be converted directly into a scan ray index. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="lidar_radius" value="0.038"/>
+  <xacro:property name="lidar_length" value="0.045"/>
+  <xacro:property name="lidar_mass"   value="0.17"/>
+
+  <link name="lidar_link">
+    <!-- Sensor body. Its origin is the measurement origin, so the scan
+         ranges are measured from exactly here. -->
+    <visual>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
+      <material name="porter_dark"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="${lidar_mass}"/>
+      <inertia ixx="${lidar_mass*(3*lidar_radius*lidar_radius + lidar_length*lidar_length)/12}" ixy="0" ixz="0"
+               iyy="${lidar_mass*(3*lidar_radius*lidar_radius + lidar_length*lidar_length)/12}" iyz="0"
+               izz="${lidar_mass*lidar_radius*lidar_radius/2}"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="lidar_link"/>
+    <origin xyz="${sensor_x} 0 ${lidar_height - base_height}" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>scan</topic>
+      <update_rate>10</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <!-- Stamped into LaserScan.header.frame_id; RViz resolves the scan
+           against the TF tree using this name. -->
+      <frame_id>lidar_link</frame_id>
+      <lidar>
+        <!-- Front mounted, so the rear arc is blocked by the chassis anyway.
+             The chassis corners block the view beyond +-97 degrees, so the
+             scan is limited to +-90 with a small margin: every returned ray
+             is real. 181 samples give one degree per ray. The camera only
+             sees +-40 degrees, so the target bearing always falls inside.
+             The controller needs the target bearing and the forward +-30
+             degrees, both well inside this field. -->
+        <scan>
+          <horizontal>
+            <samples>181</samples>
+            <resolution>1</resolution>
+            <min_angle>${-pi/2}</min_angle>
+            <max_angle>${ pi/2}</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <!-- A little noise keeps the controller honest; a perfectly clean
+             scan hides filtering bugs that would show up on real hardware. -->
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+</robot>

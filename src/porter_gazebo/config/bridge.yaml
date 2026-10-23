@@ -1,11 +1,73 @@
+# ros_gz_bridge configuration for Porter.
+#
+# Each entry translates one topic between Gazebo Transport and ROS 2.
+# direction: GZ_TO_ROS (sensors, state), ROS_TO_GZ (commands), BIDIRECTIONAL.
+#
+# Add a sensor by appending its own block. Keep the blocks grouped by owner so
+# that two people editing this file touch different lines.
+#
+# After adding an entry, always verify that data actually flows:
+#   ros2 topic hz /<topic>
+# A wrong topic or type name produces no error, only silence.
+
+# ----- Simulation clock -------------------------------------------------
+# Lets every ROS node run on simulated time when use_sim_time is set.
+#
+# The plain /clock topic exists in Gazebo but carries no data; the clock is
+# published on /world/<world name>/clock. The gz topic therefore has to name
+# the world, which couples this file to worlds/porter_world.sdf. Rename one
+# and you must rename the other, or every node waits for a clock forever.
+- ros_topic_name: "/clock"
+  gz_topic_name: "/world/porter_world/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+# ----- Drive base (chassis.xacro / DiffDrive) ---------------------------
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/odom"
+  gz_topic_name: "/odom"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/tf"
+  gz_topic_name: "/tf"
+  ros_type_name: "tf2_msgs/msg/TFMessage"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/joint_states"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+# ----- LiDAR (lidar.xacro) ----------------------------------------------
+- ros_topic_name: "/scan"
+  gz_topic_name: "/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+# ----- Camera (camera.xacro) --------------------------------------------
+# TODO: add /camera/image_raw and /camera/camera_info here.
+
+# ----- IMU (imu.xacro) --------------------------------------------------
+- ros_topic_name: "/imu"
+  gz_topic_name: "/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# ----- Person model (person.sdf) ----------------------------------------
 - ros_topic_name: "/person/cmd_vel"
   gz_topic_name: "/person/cmd_vel"
   ros_type_name: "geometry_msgs/msg/Twist"
   gz_type_name: "gz.msgs.Twist"
   direction: ROS_TO_GZ
-
-- ros_topic_name: "/clock"
-  gz_topic_name: "/clock"
-  ros_type_name: "rosgraph_msgs/msg/Clock"
-  gz_type_name: "gz.msgs.Clock"
-  direction: GZ_TO_ROS
