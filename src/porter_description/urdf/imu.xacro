@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!-- IMU at the chassis centre.
+
+     Placement matters: during an in-place turn any point at distance r from
+     the centre of rotation feels a centripetal acceleration omega^2 * r. At
+     the chassis edge (0.375 m) and the robot's maximum 1.0 rad/s that is
+     0.375 m/s^2 of acceleration the robot is not actually experiencing, which
+     corrupts the pitch estimate the speed limiter depends on. The differential
+     drive turns about the wheel axle midpoint, which lies on base_link's
+     vertical axis, so the sensor sits at x = y = 0. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="imu_size" value="0.03"/>
+  <xacro:property name="imu_mass" value="0.02"/>
+
+  <link name="imu_link">
+    <visual>
+      <geometry><box size="${imu_size} ${imu_size} ${imu_size/3}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <xacro:box_inertia m="${imu_mass}" x="${imu_size}"
+                       y="${imu_size}" z="${imu_size/3}"/>
+  </link>
+
+  <!-- No collision: the board lives inside the chassis and contact with it
+       is meaningless. -->
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu" type="imu">
+      <topic>imu</topic>
+      <update_rate>100</update_rate>
+      <always_on>true</always_on>
+      <frame_id>imu_link</frame_id>
+      <imu>
+        <!-- Noise figures are in the range of a consumer MEMS unit. A noiseless
+             IMU would let the controller trust raw pitch, which would not hold
+             on real hardware. -->
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0003</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0003</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0003</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.015</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.015</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.015</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+</robot>

@@ -59,7 +59,11 @@
 # TODO: add /camera/image_raw and /camera/camera_info here.
 
 # ----- IMU (imu.xacro) --------------------------------------------------
-# TODO: add /imu here.
+- ros_topic_name: "/imu"
+  gz_topic_name: "/imu"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
 
 # ----- Person model (person.sdf) ----------------------------------------
 - ros_topic_name: "/person/cmd_vel"

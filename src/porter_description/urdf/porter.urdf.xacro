@@ -7,6 +7,7 @@
   <xacro:include filename="$(find porter_description)/urdf/chassis.xacro"/>
 
   <xacro:include filename="$(find porter_description)/urdf/lidar.xacro"/>
+  <xacro:include filename="$(find porter_description)/urdf/imu.xacro"/>
 
   <!-- Sensors are added as they are implemented:
        <xacro:include filename="$(find porter_description)/urdf/camera.xacro"/>
