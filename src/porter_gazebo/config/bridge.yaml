@@ -12,8 +12,13 @@
 
 # ----- Simulation clock -------------------------------------------------
 # Lets every ROS node run on simulated time when use_sim_time is set.
+#
+# The plain /clock topic exists in Gazebo but carries no data; the clock is
+# published on /world/<world name>/clock. The gz topic therefore has to name
+# the world, which couples this file to worlds/porter_world.sdf. Rename one
+# and you must rename the other, or every node waits for a clock forever.
 - ros_topic_name: "/clock"
-  gz_topic_name: "/clock"
+  gz_topic_name: "/world/porter_world/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
