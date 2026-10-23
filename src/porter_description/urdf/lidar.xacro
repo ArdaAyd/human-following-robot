@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!-- 360 degree LiDAR on a short post at the front of the chassis.
+     Shares sensor_mast_x with the camera so that a bearing measured in the
+     image can be converted directly into a scan ray index. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="lidar_radius" value="0.038"/>
+  <xacro:property name="lidar_length" value="0.045"/>
+  <xacro:property name="lidar_mass"   value="0.17"/>
+
+  <!-- The post runs from the chassis top up to the underside of the puck. -->
+  <xacro:property name="post_radius"  value="0.012"/>
+  <xacro:property name="chassis_top"  value="${base_height + chassis_height/2}"/>
+  <xacro:property name="post_length"  value="${lidar_height - lidar_length/2 - chassis_top}"/>
+
+  <link name="lidar_link">
+    <!-- Sensor body. Its origin is the measurement origin, so the scan
+         ranges are measured from exactly here. -->
+    <visual>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
+      <material name="porter_dark"/>
+    </visual>
+    <!-- Support post, drawn downwards from the puck to the chassis. -->
+    <visual>
+      <origin xyz="0 0 ${-lidar_length/2 - post_length/2}" rpy="0 0 0"/>
+      <geometry><cylinder radius="${post_radius}" length="${post_length}"/></geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="${lidar_mass}"/>
+      <inertia ixx="${lidar_mass*(3*lidar_radius*lidar_radius + lidar_length*lidar_length)/12}" ixy="0" ixz="0"
+               iyy="${lidar_mass*(3*lidar_radius*lidar_radius + lidar_length*lidar_length)/12}" iyz="0"
+               izz="${lidar_mass*lidar_radius*lidar_radius/2}"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="lidar_link"/>
+    <origin xyz="${sensor_mast_x} 0 ${lidar_height - base_height}" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>scan</topic>
+      <update_rate>10</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <!-- Stamped into LaserScan.header.frame_id; RViz resolves the scan
+           against the TF tree using this name. -->
+      <frame_id>lidar_link</frame_id>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>${-pi}</min_angle>
+            <max_angle>${pi}</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <!-- A little noise keeps the controller honest; a perfectly clean
+             scan hides filtering bugs that would show up on real hardware. -->
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </lidar>
+    </sensor>
+  </gazebo>
+
+</robot>
