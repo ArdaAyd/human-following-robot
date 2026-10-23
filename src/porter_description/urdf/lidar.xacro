@@ -8,23 +8,12 @@
   <xacro:property name="lidar_length" value="0.045"/>
   <xacro:property name="lidar_mass"   value="0.17"/>
 
-  <!-- The post runs from the chassis top up to the underside of the puck. -->
-  <xacro:property name="post_radius"  value="0.012"/>
-  <xacro:property name="chassis_top"  value="${base_height + chassis_height/2}"/>
-  <xacro:property name="post_length"  value="${lidar_height - lidar_length/2 - chassis_top}"/>
-
   <link name="lidar_link">
     <!-- Sensor body. Its origin is the measurement origin, so the scan
          ranges are measured from exactly here. -->
     <visual>
       <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
       <material name="porter_dark"/>
-    </visual>
-    <!-- Support post, drawn downwards from the puck to the chassis. -->
-    <visual>
-      <origin xyz="0 0 ${-lidar_length/2 - post_length/2}" rpy="0 0 0"/>
-      <geometry><cylinder radius="${post_radius}" length="${post_length}"/></geometry>
-      <material name="porter_accent"/>
     </visual>
     <collision>
       <geometry><cylinder radius="${lidar_radius}" length="${lidar_length}"/></geometry>
@@ -40,7 +29,7 @@
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child  link="lidar_link"/>
-    <origin xyz="${sensor_mast_x} 0 ${lidar_height - base_height}" rpy="0 0 0"/>
+    <origin xyz="${sensor_x} 0 ${lidar_height - base_height}" rpy="0 0 0"/>
   </joint>
 
   <gazebo reference="lidar_link">
@@ -53,12 +42,19 @@
            against the TF tree using this name. -->
       <frame_id>lidar_link</frame_id>
       <lidar>
+        <!-- Front mounted, so the rear arc is blocked by the chassis anyway.
+             The chassis corners block the view beyond +-97 degrees, so the
+             scan is limited to +-90 with a small margin: every returned ray
+             is real. 181 samples give one degree per ray. The camera only
+             sees +-40 degrees, so the target bearing always falls inside.
+             The controller needs the target bearing and the forward +-30
+             degrees, both well inside this field. -->
         <scan>
           <horizontal>
-            <samples>360</samples>
+            <samples>181</samples>
             <resolution>1</resolution>
-            <min_angle>${-pi}</min_angle>
-            <max_angle>${pi}</max_angle>
+            <min_angle>${-pi/2}</min_angle>
+            <max_angle>${ pi/2}</max_angle>
           </horizontal>
         </scan>
         <range>
