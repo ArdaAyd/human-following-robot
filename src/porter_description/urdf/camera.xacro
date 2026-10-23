@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!-- Fixed forward-facing RGB camera. Placement comes from chassis.xacro so
+     the optical centre and the LiDAR share the same vertical axis. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="camera_post_width" value="0.025"/>
+  <xacro:property name="camera_post_height"
+                  value="${camera_height - base_height - chassis_height/2}"/>
+  <xacro:property name="camera_arm_length" value="${sensor_x - mast_post_x}"/>
+  <xacro:property name="camera_body_length" value="0.06"/>
+  <xacro:property name="camera_body_width" value="0.08"/>
+  <xacro:property name="camera_body_height" value="0.05"/>
+
+  <!-- The post starts at the chassis top and stays behind the scan origin. -->
+  <link name="camera_mast_link">
+    <visual>
+      <geometry>
+        <box size="${camera_post_width} ${camera_post_width} ${camera_post_height}"/>
+      </geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${camera_post_width} ${camera_post_width} ${camera_post_height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="0.45" x="${camera_post_width}"
+                       y="${camera_post_width}" z="${camera_post_height}"/>
+  </link>
+  <joint name="camera_mast_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_mast_link"/>
+    <origin xyz="${mast_post_x} 0 ${chassis_height/2 + camera_post_height/2}"/>
+  </joint>
+
+  <!-- Short forward arm; camera_link remains a direct child of base_link. -->
+  <link name="camera_arm_link">
+    <visual>
+      <geometry>
+        <box size="${camera_arm_length} ${camera_post_width} ${camera_post_width}"/>
+      </geometry>
+      <material name="porter_accent"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${camera_arm_length} ${camera_post_width} ${camera_post_width}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="0.05" x="${camera_arm_length}"
+                       y="${camera_post_width}" z="${camera_post_width}"/>
+  </link>
+  <joint name="camera_arm_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_arm_link"/>
+    <origin xyz="${(mast_post_x + sensor_x)/2} 0 ${camera_height - base_height}"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="${camera_body_length} ${camera_body_width} ${camera_body_height}"/>
+      </geometry>
+      <material name="porter_dark"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${camera_body_length} ${camera_body_width} ${camera_body_height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="0.1" x="${camera_body_length}"
+                       y="${camera_body_width}" z="${camera_body_height}"/>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="${sensor_x} 0 ${camera_height - base_height}"/>
+  </joint>
+
+  <!-- ROS optical convention: +Z forward, +X right, +Y down. This empty
+       link is a TF frame, not an additional physical body. -->
+  <link name="camera_optical_link"/>
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+  </joint>
+
+  <gazebo reference="camera_link">
+    <!-- Gazebo cameras look along local +X. The sensor pose stays aligned
+         with camera_link; only the ROS message frame uses optical axes. -->
+    <sensor name="camera" type="camera">
+      <topic>/camera/image_raw</topic>
+      <frame_id>camera_optical_link</frame_id>
+      <update_rate>30</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <camera>
+        <horizontal_fov>${80*pi/180}</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>30.0</far>
+        </clip>
+        <camera_info_topic>/camera/camera_info</camera_info_topic>
+      </camera>
+    </sensor>
+  </gazebo>
+
+</robot>

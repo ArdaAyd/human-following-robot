@@ -39,18 +39,13 @@ source install/setup.bash
 
 ## Running
 
-```bash
-ros2 launch porter_gazebo bringup.launch.py
-```
+Follow the [manual camera demo](src/porter_description/README.md) to start the
+warehouse world, spawn Porter, bridge its sensors and open the live camera
+image. The [person walker guide](src/porter_control/README.md) describes the
+72-second walking scenario.
 
-This starts Gazebo with the world, spawns the robot, starts `ros_gz_bridge` and
-opens RViz.
-
-To inspect the simulation without the behaviour nodes:
-
-```bash
-ros2 launch porter_gazebo bringup.launch.py behaviour:=false
-```
+The shared `bringup.launch.py`, RViz configuration and automatic following
+behaviour are still pending.
 
 ## Packages
 
@@ -65,6 +60,7 @@ ros2 launch porter_gazebo bringup.launch.py behaviour:=false
 | Topic | Message type | Direction |
 |---|---|---|
 | `/camera/image_raw` | `sensor_msgs/msg/Image` | Gazebo → color_detector |
+| `/camera/camera_info` | `sensor_msgs/msg/CameraInfo` | Gazebo → visualisation |
 | `/scan` | `sensor_msgs/msg/LaserScan` | Gazebo → follow_controller |
 | `/imu` | `sensor_msgs/msg/Imu` | Gazebo → follow_controller |
 | `/target` | `geometry_msgs/msg/PointStamped` | color_detector → follow_controller |
@@ -117,15 +113,15 @@ the same file at the same time. If that does happen, say so before starting.
 ## Status
 
 - [x] Workspace and package layout
-- [ ] Robot model (URDF/Xacro) and motion via `/cmd_vel`
+- [x] Robot model (URDF/Xacro) and motion via `/cmd_vel`
 - [ ] LiDAR integration and visualisation
-- [ ] Camera integration and visualisation
+- [x] Camera integration and visualisation
 - [ ] IMU integration and visualisation
-- [ ] Gazebo world and person model
+- [x] Gazebo world and person model
 - [ ] Single bringup launch file
 - [ ] `color_detector` — colour detection and bearing
 - [ ] `follow_controller` — following behaviour
-- [ ] `person_walker` — demo scenario
+- [x] `person_walker` — demo scenario
 
 ## License
 
