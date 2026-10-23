@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Top level robot description. Each part lives in its own file so that two
+     people can work in parallel without editing the same file. Add a new
+     sensor by writing its own xacro and including it here. -->
+<robot name="porter" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find porter_description)/urdf/chassis.xacro"/>
+
+  <!-- Sensors are added as they are implemented:
+       <xacro:include filename="$(find porter_description)/urdf/lidar.xacro"/>
+       <xacro:include filename="$(find porter_description)/urdf/camera.xacro"/>
+       <xacro:include filename="$(find porter_description)/urdf/imu.xacro"/> -->
+
+</robot>
