@@ -1,5 +1,5 @@
-import os
 from glob import glob
+import os
 
 from setuptools import find_packages, setup
 
@@ -19,7 +19,8 @@ setup(
     zip_safe=True,
     maintainer='Arda AYDIN',
     maintainer_email='aydinnard@gmail.com',
-    description='Colour detection, following behaviour and demo scenario nodes for the Porter robot.',
+    description=('Colour detection, following behaviour and demo scenario '
+                 'nodes for the Porter robot.'),
     license='MIT',
     extras_require={'test': ['pytest']},
     entry_points={
