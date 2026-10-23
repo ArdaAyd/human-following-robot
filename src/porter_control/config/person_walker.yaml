@@ -1,0 +1,12 @@
+person_walker:
+  ros__parameters:
+    use_sim_time: true
+    publish_rate: 20.0       # Hz, command heartbeat in wall time
+    start_delay: 2.0         # s, after clock and command receiver are available
+    linear_speed: 0.3        # m/s, below Porter's planned 0.5 m/s maximum
+    turn_speed: 0.5235987755982988  # rad/s, 90 degrees left over 3 s
+    sidestep_speed: 0.3      # m/s, positive body-frame Y (left)
+    straight_duration: 8.0  # s, 2.4 m forward
+    turn_duration: 3.0      # s, turn in place
+    ramp_duration: 10.0     # s, 3 m forward; align the world ramp with this leg
+    sidestep_duration: 3.0  # s, 0.9 m left; then hold zero velocity

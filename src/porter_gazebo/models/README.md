@@ -47,8 +47,8 @@ gz topic -t /person/cmd_vel -m gz.msgs.Twist -p 'linear: {x: 0} angular: {z: 0}'
 
 The plugin holds the most recent command, so stopping the publisher does not
 stop the model. Always send a zero command after a motion check. The commands
-above use Gazebo Transport directly; a ROS-to-Gazebo bridge for
-`geometry_msgs/msg/Twist` will be connected with the walker in a separate task.
+above use Gazebo Transport directly. To run the ROS bridge and the fixed walking
+scenario, follow [`porter_control/README.md`](../../porter_control/README.md).
 Ramp traversal still needs validation in the project world.
 
 ## World integration
