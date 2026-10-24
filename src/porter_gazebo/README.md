@@ -26,10 +26,10 @@ Gazebo's server and GUI are separate child processes of this launch. Closing the
 Gazebo window or pressing Ctrl+C in the launch terminal stops the session and its
 child processes. Closing RViz alone leaves the simulation running.
 
-Automatic following is off by default because `follow_controller` on `main` is
-still a placeholder. The default demo walks the person while Porter stays in place;
-the camera can lose sight of the person during the route. The controller can be
-enabled with `follow:=true` after its implementation is ready.
+The default session runs the complete demonstration: the person walks the
+72-second route and Porter follows at the configured distance, over the ramp and
+onto the loading deck. Pass `follow:=false` to walk the person while Porter stays
+in place, which is the easier view when inspecting the camera and detector mask.
 
 ## Launch options
 
@@ -39,7 +39,7 @@ enabled with `follow:=true` after its implementation is ready.
 | `rviz` | `true` | Open `porter_description/rviz/porter.rviz` |
 | `behaviour` | `true` | Enable detection and the selected demo/controller nodes |
 | `walker` | `true` | Run `person_walker` when behaviour is enabled |
-| `follow` | `false` | Run the following controller when behaviour is enabled |
+| `follow` | `true` | Run the following controller when behaviour is enabled |
 
 Keep the person stationary while inspecting the camera and mask:
 

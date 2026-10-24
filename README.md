@@ -49,8 +49,8 @@ For a stationary camera check, add `walker:=false`. For sensor visualisation
 without behaviour nodes, add `behaviour:=false`. See the [bringup guide](src/porter_gazebo/README.md)
 for headless mode, startup/shutdown behaviour and the RViz display descriptions.
 
-Automatic following remains off by default (`follow:=false`) while the controller
-implementation is pending. The [colour detector guide](src/porter_control/README.md#colour-detector)
+The default session runs the full demonstration including the following
+behaviour; pass `follow:=false` to keep Porter stationary. The [colour detector guide](src/porter_control/README.md#colour-detector)
 explains the bearing and debug mask, and the [person walker guide](src/porter_control/README.md#person-walker)
 describes the 72-second route.
 
@@ -127,7 +127,7 @@ the same file at the same time. If that does happen, say so before starting.
 - [x] Gazebo world and person model
 - [x] Single bringup launch file
 - [x] `color_detector` — colour detection and bearing
-- [ ] `follow_controller` — following behaviour
+- [x] `follow_controller` — following behaviour
 - [x] `person_walker` — demo scenario
 
 ## License

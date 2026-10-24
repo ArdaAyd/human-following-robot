@@ -126,7 +126,7 @@ def generate_launch_description():
                               description='Run the optional detection and demo nodes'),
         DeclareLaunchArgument('walker', default_value='true',
                               description='Run the 72-second person scenario'),
-        DeclareLaunchArgument('follow', default_value='false',
-                              description='Enable the controller after implementation is ready'),
+        DeclareLaunchArgument('follow', default_value='true',
+                              description='Run the person-following controller'),
         OpaqueFunction(function=_setup),
     ])
