@@ -61,10 +61,22 @@
   <xacro:property name="rail_height"     value="0.06"/>
   <xacro:property name="rail_thick"      value="0.015"/>
 
+  <!-- The load Porter carries. Visual only, like the deck it sits on: the
+       robot's job has to be readable at a glance in the simulation and in the
+       demonstration video. Giving it mass would move the centre of mass that
+       the axle offset is set against (see the drive wheel section), so the
+       crates deliberately carry none. They sit above the LiDAR plane and
+       behind the camera, so neither sensor sees them. -->
+  <xacro:property name="crate_a" value="0.34 0.30 0.26"/>   <!-- lower crate -->
+  <xacro:property name="crate_b" value="0.22 0.20 0.16"/>   <!-- stacked box -->
+  <xacro:property name="crate_c" value="0.20 0.26 0.20"/>   <!-- parcel beside -->
+
   <!-- ============================= Materials ============================ -->
   <material name="porter_body">  <color rgba="0.15 0.35 0.55 1"/></material>
   <material name="porter_dark">  <color rgba="0.15 0.15 0.17 1"/></material>
   <material name="porter_accent"><color rgba="0.85 0.85 0.88 1"/></material>
+  <material name="porter_crate"> <color rgba="0.55 0.40 0.25 1"/></material>
+  <material name="porter_parcel"><color rgba="0.30 0.33 0.38 1"/></material>
 
   <!-- ============================== Macros ============================== -->
   <!-- Solid box inertia about its own centre. -->
@@ -186,8 +198,9 @@
                        y="${chassis_width}" z="${chassis_height}"/>
   </link>
 
-  <!-- Cargo deck with low rails. Visual only: it carries no load in
-       simulation and collision shapes here would only slow physics down. -->
+  <!-- Cargo deck with low rails, and the load it carries. Visual only:
+       collision shapes here would only slow physics down, and mass here would
+       shift the centre of mass the drive axle is positioned against. -->
   <link name="cargo_deck_link">
     <visual>
       <geometry><box size="${platform_length} ${platform_width} ${platform_thick}"/></geometry>
@@ -208,6 +221,25 @@
       <geometry><box size="${rail_thick} ${platform_width} ${rail_height}"/></geometry>
       <material name="porter_accent"/>
     </visual>
+    <!-- Cargo: a crate with a box stacked on it, and a parcel alongside.
+         Each sits on the deck plate, so its centre is half its own height
+         above the top face. -->
+    <visual>
+      <origin xyz="-0.10 0 ${platform_thick/2 + 0.13}"/>
+      <geometry><box size="${crate_a}"/></geometry>
+      <material name="porter_crate"/>
+    </visual>
+    <visual>
+      <origin xyz="-0.10 0 ${platform_thick/2 + 0.26 + 0.08}"/>
+      <geometry><box size="${crate_b}"/></geometry>
+      <material name="porter_parcel"/>
+    </visual>
+    <visual>
+      <origin xyz="0.18 0 ${platform_thick/2 + 0.10}"/>
+      <geometry><box size="${crate_c}"/></geometry>
+      <material name="porter_crate"/>
+    </visual>
+
     <xacro:box_inertia m="2.0" x="${platform_length}"
                        y="${platform_width}" z="${platform_thick}"/>
   </link>
