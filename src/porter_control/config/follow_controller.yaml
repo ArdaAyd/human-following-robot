@@ -2,6 +2,7 @@
 # Starting values; to be tuned against the simulation (project document, section 6).
 follow_controller:
   ros__parameters:
+    use_sim_time: true
     target_distance: 1.0     # m     distance to keep behind the person
     kp_angle: 1.5            #       proportional gain on bearing error
     kd_angle: 0.1            #       derivative gain, fed by the IMU gyroscope
@@ -13,3 +14,5 @@ follow_controller:
     pitch_threshold: 0.087   # rad   ramp detection (~5 deg); halves v_max above it
     target_timeout: 0.5      # s     /target older than this counts as stale
     search_duration: 5.0     # s     how long to sweep for a lost target
+    search_omega: 0.4        # rad/s sweep rate while searching, towards the side
+                             #       where the target was last seen
