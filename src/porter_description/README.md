@@ -26,6 +26,18 @@ TF rotation does not turn the rendered view sideways.
 Both topics use the single shared `porter_gazebo/config/bridge.yaml`.
 The project world already loads the Gazebo Sensors system with Ogre2.
 
+## Quick start
+
+After building and sourcing the workspace, open the complete stationary sensor
+view with:
+
+```bash
+ros2 launch porter_gazebo bringup.launch.py walker:=false
+```
+
+The [bringup guide](../porter_gazebo/README.md) describes all launch options.
+The manual steps below are useful when inspecting each component separately.
+
 ## Manual camera demo
 
 Build from the workspace root:

@@ -39,14 +39,20 @@ source install/setup.bash
 
 ## Running
 
-Follow the [manual camera demo](src/porter_description/README.md) to start the
-warehouse world, spawn Porter, bridge its sensors and open the live camera
-image. The [person walker guide](src/porter_control/README.md#person-walker) describes the
-72-second walking scenario. The [colour detector guide](src/porter_control/README.md#colour-detector)
-explains how to publish the orange vest bearing and inspect the live mask.
+Start the world, robot, three-sensor RViz view and person scenario:
 
-The shared `bringup.launch.py`, RViz configuration and automatic following
-behaviour are still pending.
+```bash
+ros2 launch porter_gazebo bringup.launch.py
+```
+
+For a stationary camera check, add `walker:=false`. For sensor visualisation
+without behaviour nodes, add `behaviour:=false`. See the [bringup guide](src/porter_gazebo/README.md)
+for headless mode, startup/shutdown behaviour and the RViz display descriptions.
+
+Automatic following remains off by default (`follow:=false`) while the controller
+implementation is pending. The [colour detector guide](src/porter_control/README.md#colour-detector)
+explains the bearing and debug mask, and the [person walker guide](src/porter_control/README.md#person-walker)
+describes the 72-second route.
 
 ## Packages
 
@@ -115,11 +121,11 @@ the same file at the same time. If that does happen, say so before starting.
 
 - [x] Workspace and package layout
 - [x] Robot model (URDF/Xacro) and motion via `/cmd_vel`
-- [ ] LiDAR integration and visualisation
+- [x] LiDAR integration and visualisation
 - [x] Camera integration and visualisation
-- [ ] IMU integration and visualisation
+- [x] IMU integration and visualisation
 - [x] Gazebo world and person model
-- [ ] Single bringup launch file
+- [x] Single bringup launch file
 - [x] `color_detector` — colour detection and bearing
 - [ ] `follow_controller` — following behaviour
 - [x] `person_walker` — demo scenario
