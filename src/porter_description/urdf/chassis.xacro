@@ -16,7 +16,22 @@
 
   <xacro:property name="caster_radius"  value="0.035"/>
   <xacro:property name="caster_mass"    value="0.3"/>
-  <xacro:property name="caster_offset"  value="0.31"/>   <!-- +-X from centre -->
+
+  <!-- Both casters sit ahead of the drive wheels, as a lateral pair, and never
+       one at each end. Casters fore and aft straddle the foot of a ramp, and
+       the rigid chassis then follows the straight line between them, lifting
+       the drive wheels clear of the surface: 2.2 cm on the 8 degree ramp,
+       which is enough to lose traction entirely. -->
+  <xacro:property name="caster_x"       value="0.31"/>
+  <xacro:property name="caster_dy"      value="0.18"/>   <!-- +-Y of the pair -->
+
+  <!-- The axle sits behind the centre of mass, so the body always leans onto
+       the casters. With the axle under the centre of mass the robot rocks
+       about 19 degrees nose-up under acceleration, with nothing behind it to
+       catch the body. Note that base_link therefore no longer coincides with
+       the point the robot turns about: odometry from the drive plugin refers
+       to the axle, 0.10 m behind base_link. -->
+  <xacro:property name="wheel_x"        value="-0.10"/>
 
   <!-- Chassis centre height. The wheel axle must sit exactly one wheel radius
        above the ground, so the wheel joints are lowered by this difference. -->
@@ -98,7 +113,7 @@
     <joint name="${prefix}_wheel_joint" type="continuous">
       <parent link="base_link"/>
       <child  link="${prefix}_wheel_link"/>
-      <origin xyz="0 ${side*wheel_dy} ${wheel_dz}" rpy="0 0 0"/>
+      <origin xyz="${wheel_x} ${side*wheel_dy} ${wheel_dz}" rpy="0 0 0"/>
       <axis xyz="0 1 0"/>
     </joint>
 
@@ -109,8 +124,9 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- One caster, modelled as a frictionless sphere rigidly attached to the
-       body. A real swivel joint is unnecessary and only adds instability. -->
+  <!-- One caster of the front pair, modelled as a frictionless sphere rigidly
+       attached to the body. A real swivel joint is unnecessary and only adds
+       instability; side selects the left or right of the pair. -->
   <xacro:property name="caster_strut_radius" value="0.013"/>
   <!-- Leg from the chassis underside down to the top of the ball. -->
   <xacro:property name="caster_strut_length"
@@ -139,7 +155,7 @@
     <joint name="${prefix}_caster_joint" type="fixed">
       <parent link="base_link"/>
       <child  link="${prefix}_caster_link"/>
-      <origin xyz="${side*caster_offset} 0 ${caster_dz}" rpy="0 0 0"/>
+      <origin xyz="${caster_x} ${side*caster_dy} ${caster_dz}" rpy="0 0 0"/>
     </joint>
 
     <gazebo reference="${prefix}_caster_link">
@@ -204,8 +220,8 @@
 
   <xacro:drive_wheel prefix="left"  side="1"/>
   <xacro:drive_wheel prefix="right" side="-1"/>
-  <xacro:caster      prefix="front" side="1"/>
-  <xacro:caster      prefix="rear"  side="-1"/>
+  <xacro:caster      prefix="front_left"  side="1"/>
+  <xacro:caster      prefix="front_right" side="-1"/>
 
   <!-- ============================= Gazebo =============================== -->
   <gazebo>
