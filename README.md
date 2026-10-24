@@ -54,6 +54,25 @@ behaviour; pass `follow:=false` to keep Porter stationary. The [colour detector 
 explains the bearing and debug mask, and the [person walker guide](src/porter_control/README.md#person-walker)
 describes the 72-second route.
 
+## Demonstration
+
+Porter follows a person carrying its load through the warehouse yard, over an
+8-degree ramp and onto the loading deck.
+
+![Porter following the person up the ramp](docs/porter_on_ramp.png)
+
+The prepared RViz view shows all three sensors at once: the robot model, the
+live LiDAR returns in cyan, the IMU orientation, and the camera image.
+
+![RViz with the robot model, LiDAR scan and camera image](docs/rviz.png)
+
+The behaviour reacts to what the sensors report. Below, the commanded forward
+speed over one complete run: it rises to about 0.30 m/s on the straight legs
+and falls at each turn, and inside the shaded region the IMU reports a pitch
+past the threshold, so the speed is held at half of `v_max`.
+
+![Commanded speed over the route, capped on the ramp](docs/speed_on_ramp.png)
+
 ## Packages
 
 | Package | Contents |
